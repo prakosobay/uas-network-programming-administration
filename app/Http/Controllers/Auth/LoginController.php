@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\OtpVerification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 class LoginController extends Controller
 {
@@ -31,4 +35,52 @@ class LoginController extends Controller
     public function loginForm() {
         return view('login');
     }
+
+    public function attemptLogin(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['success' => false, 'message' => 'Email atau password salah.']);
+        }
+
+        // Generate OTP
+        $otp = rand(100000, 999999);
+
+        // Simpan OTP ke DB
+        OtpVerification::create([
+            'user_id' => $user->id,
+            'otp_code' => $otp,
+            'expired_at' => now()->addMinutes(3),
+        ]);
+
+        // Kirim via WhatsApp (contoh kirim ke API eksternal)
+        // $message = "Kode OTP kamu: $otp (hanya berlaku 3 menit)";
+        // Http::post('https://api.chat-api.com/instance12345/message?token=your_token', [
+        //     'phone' => $user->phone,
+        //     'body'  => $message
+        // ]);
+
+        return response()->json(['success' => true, 'user_id' => $user->id]);
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $otp = OtpVerification::where('user_id', $request->user_id)
+            ->where('otp_code', $request->otp_code)
+            ->where('is_verified', false)
+            ->where('expired_at', '>=', now())
+            ->first();
+
+        if (!$otp) {
+            return redirect()->back()->with('error', 'Kode OTP salah atau sudah kadaluarsa.');
+        }
+
+        $otp->update(['is_verified' => true]);
+
+        Auth::loginUsingId($request->user_id);
+
+        return redirect('/home');
+    }
+
 }

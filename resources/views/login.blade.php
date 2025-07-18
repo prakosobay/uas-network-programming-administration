@@ -24,7 +24,7 @@
                 <div class="tab-pane fade show active" id="login" role="tabpanel">
                     <div class="card">
                         <div class="card-body">
-                            <form method="POST" action="{{ route('login') }}">
+                            <form method="POST" id="loginForm">
                                 @csrf
                                 <div class="mb-3">
                                     <label>Email</label>
@@ -98,33 +98,30 @@
     </div>
 </div>
 
-<div class="modal fade" id="mdlOtpInput" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="mdlOtpInputLabel" aria-hidden="true">
+<div class="modal fade" id="otpModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="mdlOtpInputLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="mdlOtpInputLabel">Input OTP</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-            <label class="form-label">OTP</label>
-            <input type="number" name="otpCode" class="form-control @error('otpCode') is-invalid @enderror" required value="{{ old('otpCode') }}">
-            @error('otpCode')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
+    <form method="POST" action="{{ route('otp.verify') }}">
+        @csrf
+        <input type="hidden" name="user_id" id="otp_user_id">
+        <div class="modal-content">
+            <div class="modal-header"><h5>Masukkan OTP</h5></div>
+            <div class="modal-body">
+                <input type="text" name="otp_code" class="form-control" required>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Verifikasi</button>
+            </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" id="btnSubmitOtp" class="btn btn-primary">Submit</button>
-      </div>
-    </div>
+    </form>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-
+<script>
+    const OTP_LOGIN_URL = "{{ route('otp.login') }}";
+    const CSRF_TOKEN = "{{ csrf_token() }}";
+</script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script type="module" src="{{ asset('script/login.js') }}"></script>
 </body>

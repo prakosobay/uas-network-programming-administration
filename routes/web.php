@@ -15,13 +15,13 @@ Route::view('/auth', 'auth')->name('auth');
 Route::get('/login', [LoginController::class, 'loginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
+Route::post('/otp-login', [LoginController::class, 'attemptLogin'])->name('otp.login');
+Route::post('/verify-otp', [LoginController::class, 'verifyOtp'])->name('otp.verify');
+
 
 Route::middleware('auth')->get('/home', function () {
     return view('home');
 });
-
-Route::get('/verify-otp', [OtpController::class, 'form'])->name('verify.otp.form');
-Route::post('/verify-otp', [OtpController::class, 'verify'])->name('verify.otp');
 
 Route::post('/logout', function () {
     Auth::logout();
