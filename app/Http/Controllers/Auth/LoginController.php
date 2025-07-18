@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use ReflectionObject;
+use Twilio\Rest\Client;
 
 class LoginController extends Controller
 {
@@ -38,38 +41,81 @@ class LoginController extends Controller
 
     public function attemptLogin(Request $request)
     {
-        $user = User::where('email', $request->email)->first();
+        try {
+            $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['success' => false, 'message' => 'Email atau password salah.']);
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return response()->json(['success' => false, 'message' => 'Email atau password salah.']);
+            }
+
+            // Generate OTP
+            $otp = rand(100000, 999999);
+
+            // Simpan OTP ke DB
+            OtpVerification::create([
+                'user_id' => $user->id,
+                'otp' => $otp,
+                'expires_at' => now()->addMinutes(2),
+            ]);
+
+            $sid = "AC2b30e30d988e15b25958d5bc1927ff88";
+            $token = "2b4627ceab07ca5892958f7fc1bd70b7";
+            // $twilio = new Client($sid, $token);
+
+            // $token = 'fjLLG3y9MR6UoC6cyj34';
+
+            // $httpClient = new \Twilio\Http\CurlClient();
+            // $httpClientOptions = [
+            //     CURLOPT_SSL_VERIFYPEER => false,
+            //     CURLOPT_SSL_VERIFYHOST => false,
+            // ];
+            // $refObject = new ReflectionObject($httpClient);
+            // $property = $refObject->getProperty('options');
+            // $property->setAccessible(true);
+            // $property->setValue($httpClient, $httpClientOptions);
+            // $twilio->setHttpClient($httpClient);
+
+            $to = "whatsapp:+6285157052030";
+            $message = "testing";
+            $twilio = new Client($sid, $token);
+
+            $message = $twilio->messages->create(
+                $to,
+                array(
+                'from' => $to,
+                'body' => $message
+                )
+            );
+
+            // $twilio->messages->create($to, [
+            //     "from" => "whatsapp:+14155238886", // Nomor Twilio WhatsApp
+            //     "contentSid" => "HXb5b62575e6e4ff6129ad7c8efe1f983e",
+            //     "contentVariables" => json_encode(["1" => $otp]),
+            // ]);
+
+            // $twilio->messages
+            // ->create("whatsapp:+$user->phone",
+            //     array(
+            //     "from" => "whatsapp:+14155238886",
+            //     "contentSid" => "HXb5b62575e6e4ff6129ad7c8efe1f983e",
+            //     "contentVariables" => json_encode(["1" => "409173"]),
+            //     // "contentVariables" => '{"1":"409173"}',
+            //     )
+            // );
+
+            return response()->json(['success' => true, 'user_id' => $user->id]);
+        } catch (\Exception $e) {
+            dd($e);
+            // Log::error("Gagal kirim OTP WA: " . $e->getMessage());
         }
-
-        // Generate OTP
-        $otp = rand(100000, 999999);
-
-        // Simpan OTP ke DB
-        OtpVerification::create([
-            'user_id' => $user->id,
-            'otp_code' => $otp,
-            'expired_at' => now()->addMinutes(3),
-        ]);
-
-        // Kirim via WhatsApp (contoh kirim ke API eksternal)
-        // $message = "Kode OTP kamu: $otp (hanya berlaku 3 menit)";
-        // Http::post('https://api.chat-api.com/instance12345/message?token=your_token', [
-        //     'phone' => $user->phone,
-        //     'body'  => $message
-        // ]);
-
-        return response()->json(['success' => true, 'user_id' => $user->id]);
     }
 
     public function verifyOtp(Request $request)
     {
         $otp = OtpVerification::where('user_id', $request->user_id)
-            ->where('otp_code', $request->otp_code)
+            ->where('otp', $request->otp_code)
             ->where('is_verified', false)
-            ->where('expired_at', '>=', now())
+            ->where('expires_at', '>=', now())
             ->first();
 
         if (!$otp) {
