@@ -58,8 +58,8 @@ class LoginController extends Controller
                 'expires_at' => now()->addMinutes(2),
             ]);
 
-            $sid = "AC2b30e30d988e15b25958d5bc1927ff88";
-            $token = "2b4627ceab07ca5892958f7fc1bd70b7";
+            // $sid = "AC2b30e30d988e15b25958d5bc1927ff88";
+            // $token = "2b4627ceab07ca5892958f7fc1bd70b7";
             // $twilio = new Client($sid, $token);
 
             // $token = 'fjLLG3y9MR6UoC6cyj34';
@@ -75,17 +75,17 @@ class LoginController extends Controller
             // $property->setValue($httpClient, $httpClientOptions);
             // $twilio->setHttpClient($httpClient);
 
-            $to = "whatsapp:+6285157052030";
-            $message = "testing";
-            $twilio = new Client($sid, $token);
+            // $to = "whatsapp:+6285157052030";
+            // $message = "testing";
+            // $twilio = new Client($sid, $token);
 
-            $message = $twilio->messages->create(
-                $to,
-                array(
-                'from' => $to,
-                'body' => $message
-                )
-            );
+            // $message = $twilio->messages->create(
+            //     $to,
+            //     array(
+            //     'from' => $to,
+            //     'body' => $message
+            //     )
+            // );
 
             // $twilio->messages->create($to, [
             //     "from" => "whatsapp:+14155238886", // Nomor Twilio WhatsApp
