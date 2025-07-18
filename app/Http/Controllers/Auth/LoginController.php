@@ -48,20 +48,30 @@ class LoginController extends Controller
                 return response()->json(['success' => false, 'message' => 'Email atau password salah.']);
             }
 
-            // Generate OTP
             $otp = rand(100000, 999999);
 
-            // Simpan OTP ke DB
             OtpVerification::create([
                 'user_id' => $user->id,
                 'otp' => $otp,
                 'expires_at' => now()->addMinutes(2),
             ]);
 
+            $sid = "";
+            $token = "";
+
+            $twilio = new Client($sid, $token);
+            $to = "whatsapp:+$user->phone";
+
+            $message = $twilio->messages
+            ->create($to, [
+                "from" => "whatsapp:+14155238886",
+                "body" => "Kode OTP kamu adalah $otp"
+            ]);
+
             return response()->json(['success' => true, 'user_id' => $user->id]);
         } catch (\Exception $e) {
             dd($e);
-            // Log::error("Gagal kirim OTP WA: " . $e->getMessage());
+            Log::error("Gagal kirim OTP WA: " . $e->getMessage());
         }
     }
 
