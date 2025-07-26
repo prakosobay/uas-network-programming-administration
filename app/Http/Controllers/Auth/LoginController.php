@@ -30,9 +30,7 @@ class LoginController extends Controller
         }
 
         return back()
-            ->withErrors(['email' => 'Email atau password salah.'])
-            ->withInput()
-            ->with('form_type', 'login');
+            ->withErrors(['email' => 'Email atau password salah.']);
     }
 
     public function loginForm() {
@@ -55,6 +53,9 @@ class LoginController extends Controller
                 'otp' => $otp,
                 'expires_at' => now()->addMinutes(2),
             ]);
+
+            // $sid = "AC2b30e30d988e15b25958d5bc1927ff88";
+            // $token = "4b6511d29d88a7f2868bd5f38663d2e6";
 
             $sid = "";
             $token = "";

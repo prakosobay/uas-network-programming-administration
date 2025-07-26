@@ -21,8 +21,14 @@
 
             <div class="tab-content" id="pills-tabContent">
                 <!-- Login Tab -->
-                @if (session('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
                 <div class="tab-pane fade show active" id="login" role="tabpanel">
                     <div class="card">
